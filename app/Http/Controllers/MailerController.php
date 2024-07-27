@@ -64,21 +64,21 @@ class MailerController extends Controller
         $phone = $validated['phone'];
         $file = $request->file('file');
 
-        $endpoint = 'https://www.recaptcha.net/recaptcha/api/siteverify';
+        // $endpoint = 'https://www.recaptcha.net/recaptcha/api/siteverify';
 
-        $response = Http::asForm()->post($endpoint, [
-            'secret' => $validated['secret_key'],
-            'response' => $validated['token'],
-        ])->json();
+        // $response = Http::asForm()->post($endpoint, [
+        //     'secret' => $validated['secret_key'],
+        //     'response' => $validated['token'],
+        // ])->json();
 
-        if( $response['success'] && $response['score'] > 0.5) {
+        // if( $response['success'] && $response['score'] > 0.5) {
             $this->send($credentials, $data, $email, $phone, $file );
-        }else{
-            return response()->json([
-                'message' => 'Error en el captcha',
-                'response' => $response
-            ], 500);
-        }
+        // }else{
+        //     return response()->json([
+        //         'message' => 'Error en el captcha',
+        //         'response' => $response
+        //     ], 500);
+        // }
 
 
 
@@ -214,13 +214,13 @@ class MailerController extends Controller
             } else {
                 return redirect()->back()->withErrors([
                     'message' => 'Error al enviar el mensaje',
-                    'error' => $mail->ErrorInfo
+                    'errors' => $mail->ErrorInfo
                 ]);
             }
         } catch (Exception $e) {
             return redirect()->back()->withErrors([
                 'message' => 'Error al enviar el mensaje',
-                'error' => $e->getMessage()
+                'errors' => $e->getMessage()
             ]);
         }
     }
