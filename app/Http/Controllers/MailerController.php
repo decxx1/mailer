@@ -76,6 +76,7 @@ class MailerController extends Controller
         }else{
             return response()->json([
                 'message' => 'Error en el captcha',
+                'response' => $response
             ], 500);
         }
 
