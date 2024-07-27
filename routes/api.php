@@ -6,3 +6,4 @@ use App\Http\Controllers\MailerController;
 //     return $request->user();
 // })->middleware('auth:sanctum');
 Route::post('/mailer',[MailerController::class, 'index'])->name('index');
+Route::get('/test',[MailerController::class, 'test'])->name('test');

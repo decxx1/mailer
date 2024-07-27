@@ -12,7 +12,12 @@ use Illuminate\Http\UploadedFile;
 
 class MailerController extends Controller
 {
-
+    public function test(Request $request)
+    {
+        return response()->json([
+            'message' => 'ok',
+        ], 200);
+    }
     public function index(Request $request)
     {
 
