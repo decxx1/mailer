@@ -62,7 +62,7 @@ class MailerController extends Controller
         ];
         $email = $validated['email'];
         $phone = $validated['phone'];
-        $file = $request->file('file');
+        $file =  $request->hasFile('file') ? $request->file('file') : null;
 
         // $endpoint = 'https://www.recaptcha.net/recaptcha/api/siteverify';
 
