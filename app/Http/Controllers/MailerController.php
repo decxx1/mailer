@@ -20,7 +20,7 @@ class MailerController extends Controller
             'message' => 'ok',
         ], 200);
     }
-    public function index(Request $request)
+    public function index(Request $request):JsonResponse
     {
 
         $validator = Validator::make($request->all(), [
@@ -46,46 +46,63 @@ class MailerController extends Controller
                 'errors' => $validator->errors()
             ], 400);
         }
+        try {
+            $validated = $validator->validated();
 
-        $validated = $validator->validated();
+            $credentials = [
+                'mail_username' => $validated['mail_username'],
+                'mail_password' => $validated['mail_password'],
+                'mail_host' => $validated['mail_host'],
+                'mail_port' => $validated['mail_port'],
+                'mail_encryption' => $validated['mail_encryption'],
+                'company' => $validated['company'],
+            ];
+            $title = 'Contacto desde la web - de:'.$validated['name'];
+            $data = [
+                'name' => $validated['name'],
+                'message' => $validated['message'],
+                'title' => $title
+            ];
+            $email = $validated['email'] ?? null;
+            $phone = $validated['phone'] ?? null;
+            $file =  $request->hasFile('file') ? $request->file('file') : null;
 
-        $credentials = [
-            'mail_username' => $validated['mail_username'],
-            'mail_password' => $validated['mail_password'],
-            'mail_host' => $validated['mail_host'],
-            'mail_port' => $validated['mail_port'],
-            'mail_encryption' => $validated['mail_encryption'],
-            'company' => $validated['company'],
-        ];
-        $title = 'Contacto desde la web - de:'.$validated['name'];
-        $data = [
-            'name' => $validated['name'],
-            'message' => $validated['message'],
-            'title' => $title
-        ];
-        $email = $validated['email'] ?? null;
-        $phone = $validated['phone'] ?? null;
-        $file =  $request->hasFile('file') ? $request->file('file') : null;
+            $endpoint = 'https://www.recaptcha.net/recaptcha/api/siteverify';
 
-        $endpoint = 'https://www.recaptcha.net/recaptcha/api/siteverify';
+            $response = Http::asForm()->post($endpoint, [
+                'secret' => $validated['secret_key'],
+                'response' => $validated['token'],
+            ])->json();
 
-        $response = Http::asForm()->post($endpoint, [
-            'secret' => $validated['secret_key'],
-            'response' => $validated['token'],
-        ])->json();
+            if( $response['success'] && $response['score'] > 0.5) {
+                $responseSend = $this->send($credentials, $data, $email, $phone, $file );
+            }else{
+                return response()->json([
+                    'message' => 'Error en el captcha',
+                    'response' => $response
+                ], 500);
+            }
 
-        if( $response['success'] && $response['score'] > 0.5) {
-            $this->send($credentials, $data, $email, $phone, $file );
-        }else{
+            if ($responseSend['status'] !== 200) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => $responseSend['message'],
+                    'errors' => $responseSend['errors']
+                ], 500);
+            }
+
+            // Si la subfunción fue exitosa, devuelve la respuesta de éxito
             return response()->json([
-                'message' => 'Error en el captcha',
-                'response' => $response
-            ], 500);
+                'message' => $responseSend['message']
+            ], 200);
+
+        } catch (Exception $e) {
+            return response()->json(['message' => 'Error interno del servidor'], 500);
         }
 
     }
 
-    public function send($credentials, $data, $email = null, $phone = null, ?UploadedFile $file = null):JsonResponse
+    public function send($credentials, $data, $email = null, $phone = null, ?UploadedFile $file = null)
     {
         //datos de SMPT
         $emailUserName = $credentials['mail_username'];
@@ -175,23 +192,24 @@ class MailerController extends Controller
             $mail->Body    = $body;
             //$mail->AltBody = 'This is the body in plain text for non-HTML mail clients';
 
-            $mailSent = $mail->send();
-
-            if ($mailSent) {
-                return response()->json([
+            if ($mail->send()) {
+                return [
+                    'status' => 200,
                     'message' => '¡El mensaje se envió correctamente!'
-                ], 200);
+                ];
             } else {
-                return response()->json([
+                return [
+                    'status' => 500,
                     'message' => 'Error al enviar el mensaje',
                     'errors' => $mail->ErrorInfo
-                ], 500);
+                ];
             }
         } catch (Exception $e) {
-            return response()->json([
+            return [
+                'status' => 500,
                 'message' => 'Error al enviar el mensaje',
                 'errors' => $e->getMessage()
-            ], 500);
+            ];
         }
     }
 }
