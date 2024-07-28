@@ -52,6 +52,7 @@ class MailerController extends Controller
                 'mail_host' => env('MAIL_HOST'),
                 'mail_port' => env('MAIL_PORT'),
                 'mail_encryption' => env('MAIL_ENCRYPTION'),
+                'mail_from_name' => env('MAIL_FROM_NAME')
             ];
             $title = $validated['asunto'];
             $data = [
@@ -107,6 +108,8 @@ class MailerController extends Controller
         $smtpHost = $credentials['mail_host'];
         $smtpPort = $credentials['mail_port'];
         $smtpEncryption = $credentials['mail_encryption'];
+        $mailfromname = $credentials['mail_from_name']; // nombre de la persona que envía el correo
+
         //datos de envío
         $addressee = $data['addressee'];
         $name =$data['name'];
@@ -130,7 +133,7 @@ class MailerController extends Controller
 
 
             // Establecer el remitente y la dirección de envío real
-            $mail->setFrom($emailUserName, 'No Reply');
+            $mail->setFrom($emailUserName, $mailfromname);
             // destinatario
             $mail->addAddress($addressee);
 
