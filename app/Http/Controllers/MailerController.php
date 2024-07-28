@@ -51,7 +51,6 @@ class MailerController extends Controller
                 'mail_host' => env('MAIL_HOST'),
                 'mail_port' => env('MAIL_PORT'),
                 'mail_encryption' => env('MAIL_ENCRYPTION'),
-                'company' => env('APP_NAME'),
             ];
             $title = $validated['asunto'];
             $data = [
@@ -106,7 +105,6 @@ class MailerController extends Controller
         $smtpHost = $credentials['mail_host'];
         $smtpPort = $credentials['mail_port'];
         $smtpEncryption = $credentials['mail_encryption'];
-        $company = $credentials['company'];
         //datos de envío
         $name =$data['name'];
         $message = $data['message'];
@@ -129,7 +127,7 @@ class MailerController extends Controller
 
 
             // Establecer el remitente y la dirección de envío real
-            $mail->setFrom($emailUserName, $company);
+            $mail->setFrom($emailUserName, 'No Reply');
             $mail->addAddress($emailUserName);
 
             // Establecer el remitente que se mostrará en el campo "From"
