@@ -37,7 +37,7 @@ class MailerController extends Controller
         ]);
 
 
-        if ($validator->fails()) {
+        if ($validator->stopOnFirstFailure()->fails()) {
             return response()->json([
                 'message' => 'Error en el formulario',
                 'errors' => $validator->errors()
