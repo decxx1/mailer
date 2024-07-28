@@ -31,12 +31,7 @@ class MailerController extends Controller
             'asunto' => 'required|string',
             'token' => 'required|string',
             'secret_key' => 'required|string',
-            'mail_username' => 'required|string',
-            'mail_password' => 'required|string',
-            'mail_host' => 'required|string',
-            'mail_port' => 'required|string',
-            'mail_encryption' => 'required|string',
-            'company' => 'required|string',
+
             'file' => 'nullable|file|max:2048',
         ]);
 
@@ -51,12 +46,12 @@ class MailerController extends Controller
             $validated = $validator->validated();
 
             $credentials = [
-                'mail_username' => $validated['mail_username'],
-                'mail_password' => $validated['mail_password'],
-                'mail_host' => $validated['mail_host'],
-                'mail_port' => $validated['mail_port'],
-                'mail_encryption' => $validated['mail_encryption'],
-                'company' => $validated['company'],
+                'mail_username' => env('MAIL_USERNAME'),
+                'mail_password' => env('MAIL_PASSWORD'),
+                'mail_host' => env('MAIL_HOST'),
+                'mail_port' => env('MAIL_PORT'),
+                'mail_encryption' => env('MAIL_ENCRYPTION'),
+                'company' => env('APP_NAME'),
             ];
             $title = $validated['asunto'];
             $data = [
