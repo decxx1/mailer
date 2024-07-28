@@ -108,6 +108,7 @@ class MailerController extends Controller
         $smtpPort = $credentials['mail_port'];
         $smtpEncryption = $credentials['mail_encryption'];
         //datos de envío
+        $addressee = $data['addressee'];
         $name =$data['name'];
         $message = $data['message'];
         $title = $data['title'];
@@ -130,8 +131,8 @@ class MailerController extends Controller
 
             // Establecer el remitente y la dirección de envío real
             $mail->setFrom($emailUserName, 'No Reply');
-
-            $mail->addAddress($emailUserName);
+            // destinatario
+            $mail->addAddress($addressee);
 
             // Establecer el remitente que se mostrará en el campo "From"
             $mail->clearReplyTos(); // Eliminar las direcciones de respuesta anteriores (si las hubiera)
