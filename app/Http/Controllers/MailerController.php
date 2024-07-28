@@ -25,6 +25,7 @@ class MailerController extends Controller
 
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:50',
+            'addressee' => 'required|email',
             'email' => 'nullable|email',
             'phone' => 'nullable|string|max:50',
             'message' => 'required|string|min:10',
@@ -54,6 +55,7 @@ class MailerController extends Controller
             ];
             $title = $validated['asunto'];
             $data = [
+                'addressee' => $validated['addressee'],
                 'name' => $validated['name'],
                 'message' => $validated['message'],
                 'title' => $title
@@ -128,6 +130,7 @@ class MailerController extends Controller
 
             // Establecer el remitente y la dirección de envío real
             $mail->setFrom($emailUserName, 'No Reply');
+
             $mail->addAddress($emailUserName);
 
             // Establecer el remitente que se mostrará en el campo "From"
