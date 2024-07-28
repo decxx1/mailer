@@ -28,6 +28,7 @@ class MailerController extends Controller
             'email' => 'nullable|email',
             'phone' => 'nullable|string|max:50',
             'message' => 'required|string|min:10',
+            'asunto' => 'required|string',
             'token' => 'required|string',
             'secret_key' => 'required|string',
             'mail_username' => 'required|string',
@@ -57,7 +58,7 @@ class MailerController extends Controller
                 'mail_encryption' => $validated['mail_encryption'],
                 'company' => $validated['company'],
             ];
-            $title = 'Contacto desde la web - de:'.$validated['name'];
+            $title = $validated['asunto'];
             $data = [
                 'name' => $validated['name'],
                 'message' => $validated['message'],
