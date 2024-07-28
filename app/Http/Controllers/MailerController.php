@@ -7,8 +7,10 @@ use PHPMailer\PHPMailer\SMTP;
 use PHPMailer\PHPMailer\Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class MailerController extends Controller
 {
@@ -37,14 +39,15 @@ class MailerController extends Controller
             'file' => 'nullable|file|max:2048',
         ]);
 
-        $validated = $validator->validated();
 
         if ($validator->fails()) {
             return response()->json([
                 'message' => 'Error en el formulario',
                 'errors' => $validator->errors()
-            ], 500);
+            ], 400);
         }
+
+        $validated = $validator->validated();
 
         $credentials = [
             'mail_username' => $validated['mail_username'],
@@ -60,33 +63,30 @@ class MailerController extends Controller
             'message' => $validated['message'],
             'title' => $title
         ];
-        $email = $validated['email'];
-        $phone = $validated['phone'];
+        $email = $validated['email'] ?? null;
+        $phone = $validated['phone'] ?? null;
         $file =  $request->hasFile('file') ? $request->file('file') : null;
 
-        // $endpoint = 'https://www.recaptcha.net/recaptcha/api/siteverify';
+        $endpoint = 'https://www.recaptcha.net/recaptcha/api/siteverify';
 
-        // $response = Http::asForm()->post($endpoint, [
-        //     'secret' => $validated['secret_key'],
-        //     'response' => $validated['token'],
-        // ])->json();
+        $response = Http::asForm()->post($endpoint, [
+            'secret' => $validated['secret_key'],
+            'response' => $validated['token'],
+        ])->json();
 
-        // if( $response['success'] && $response['score'] > 0.5) {
+        if( $response['success'] && $response['score'] > 0.5) {
             $this->send($credentials, $data, $email, $phone, $file );
-        // }else{
-        //     return response()->json([
-        //         'message' => 'Error en el captcha',
-        //         'response' => $response
-        //     ], 500);
-        // }
-
-
+        }else{
+            return response()->json([
+                'message' => 'Error en el captcha',
+                'response' => $response
+            ], 500);
+        }
 
     }
 
-    public function send($credentials, $data, $email = null, $phone = null, UploadedFile $file)
+    public function send($credentials, $data, $email = null, $phone = null, ?UploadedFile $file = null):JsonResponse
     {
-
         //datos de SMPT
         $emailUserName = $credentials['mail_username'];
         $emailPassword = $credentials['mail_password'];
@@ -135,45 +135,15 @@ class MailerController extends Controller
 
                 // Definir los tipos MIME permitidos
                 $allowedMimeTypes = [
-                    // Imágenes
                     'image/jpeg',
                     'image/png',
                     'image/gif',
                     'image/bmp',
                     'image/webp',
                     'image/svg+xml',
-                    // Documentos de texto
-                    // 'text/plain',
-                    // 'application/msword', // .doc
-                    // 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', // .docx
-                    // 'application/vnd.oasis.opendocument.text', // .odt
-                    // PDF
                     'application/pdf',
-                    // Hojas de cálculo
-                     'application/vnd.ms-excel', // .xls
-                     'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', // .xlsx
-                    // 'application/vnd.oasis.opendocument.spreadsheet', // .ods
-                    // Presentaciones
-                    // 'application/vnd.ms-powerpoint', // .ppt
-                    // 'application/vnd.openxmlformats-officedocument.presentationml.presentation', // .pptx
-                    // 'application/vnd.oasis.opendocument.presentation', // .odp
-                    // Archivos comprimidos
-                    // 'application/zip',
-                    // 'application/x-rar-compressed',
-                    // 'application/x-tar',
-                    // 'application/x-7z-compressed',
-                    // 'application/x-gzip',
-                    // Audio
-                    // 'audio/mpeg',
-                    // 'audio/ogg',
-                    // 'audio/wav',
-                    // 'audio/x-ms-wma',
-                    // Video
-                    // 'video/mp4',
-                    // 'video/mpeg',
-                    // 'video/quicktime',
-                    // 'video/x-msvideo',
-                    // 'video/x-flv',
+                    'application/vnd.ms-excel', // .xls
+                    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', // .xlsx
                 ];
 
                 // Verificar si el tipo MIME es válido
@@ -208,20 +178,20 @@ class MailerController extends Controller
             $mailSent = $mail->send();
 
             if ($mailSent) {
-                return redirect()->back()->with([
+                return response()->json([
                     'message' => '¡El mensaje se envió correctamente!'
-                ]);
+                ], 200);
             } else {
-                return redirect()->back()->withErrors([
+                return response()->json([
                     'message' => 'Error al enviar el mensaje',
                     'errors' => $mail->ErrorInfo
-                ]);
+                ], 500);
             }
         } catch (Exception $e) {
-            return redirect()->back()->withErrors([
+            return response()->json([
                 'message' => 'Error al enviar el mensaje',
                 'errors' => $e->getMessage()
-            ]);
+            ], 500);
         }
     }
 }
