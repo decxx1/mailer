@@ -147,15 +147,15 @@ class FranchiseMailerController extends Controller
         //data
         $addressee = $data['addressee'];
         $title = $data['title'];
-        $consult1_1 = $data['consult1_1'];
+        $consult1_1 = $data['consult1_1'] ? 'Si' : 'No';
         $sector = $data['sector'];
-        $consult2_1 = $data['consult2_1'];
+        $consult2_1 = $data['consult2_1'] ? 'Si' : 'No';
 
-        $estetica = $data['estetica'];
-        $depilacion_laser = $data['depilacion_laser'];
-        $cuidado_personal = $data['cuidado_personal'];
-        $fotodepilacion = $data['fotodepilacion'];
-        $luz_pulsada = $data['luz_pulsada'];
+        $estetica = $data['estetica'] ? 'Si' : 'No';
+        $depilacion_laser = $data['depilacion_laser'] ? 'Si' : 'No';
+        $cuidado_personal = $data['cuidado_personal'] ? 'Si' : 'No';
+        $fotodepilacion = $data['fotodepilacion'] ? 'Si' : 'No';
+        $luz_pulsada = $data['luz_pulsada'] ? 'Si' : 'No';
 
         $conocio = $data['conocio'];
         $ubicar_centro = $data['ubicar_centro'];
