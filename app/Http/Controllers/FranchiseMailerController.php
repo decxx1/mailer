@@ -87,11 +87,11 @@ class FranchiseMailerController extends Controller
                 'sector' => $validated['sector'],
                 'consult2_1' => $validated['consult2_1'],
 
-                'estetica' => $validated['estetica'],
-                'depilacion_laser' => $validated['depilacion_laser'],
-                'cuidado_personal' => $validated['cuidado_personal'],
-                'fotodepilacion' => $validated['fotodepilacion'],
-                'luz_pulsada' => $validated['luz_pulsada'],
+                'estetica' => $validated['estetica'] ?? false,
+                'depilacion_laser' => $validated['depilacion_laser'] ?? false,
+                'cuidado_personal' => $validated['cuidado_personal'] ?? false,
+                'fotodepilacion' => $validated['fotodepilacion'] ?? false,
+                'luz_pulsada' => $validated['luz_pulsada'] ?? false,
 
                 'conocio' => $validated['conocio'],
                 'ubicar_centro' => $validated['ubicar_centro'],
