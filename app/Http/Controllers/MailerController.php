@@ -5,8 +5,7 @@ namespace App\Http\Controllers;
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\SMTP;
 use PHPMailer\PHPMailer\Exception;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
+use App\Http\Requests\SendMailRequest;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Http;
@@ -20,31 +19,10 @@ class MailerController extends Controller
             'message' => 'ok',
         ], 200);
     }
-    public function index(Request $request):JsonResponse
+    public function index(SendMailRequest $request): JsonResponse
     {
-
-        $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:50',
-            'addressee' => 'required|email',
-            'email' => 'nullable|email',
-            'phone' => 'nullable|string|max:50',
-            'message' => 'required|string|min:10',
-            'asunto' => 'required|string',
-            'token' => 'required|string',
-            'secret_key' => 'required|string',
-
-            'file' => 'nullable|file|max:2048',
-        ]);
-
-
-        if ($validator->stopOnFirstFailure()->fails()) {
-            return response()->json([
-                'message' => 'Error en el formulario',
-                'errors' => $validator->errors()
-            ], 400);
-        }
         try {
-            $validated = $validator->validated();
+            $validated = $request->validated();
 
             $credentials = [
                 'mail_username' => env('MAIL_USERNAME'),
@@ -76,6 +54,7 @@ class MailerController extends Controller
                 $responseSend = $this->send($credentials, $data, $email, $phone, $file );
             }else{
                 return response()->json([
+                    'success' => false,
                     'message' => 'Error en el captcha',
                     'response' => $response
                 ], 500);
@@ -83,7 +62,7 @@ class MailerController extends Controller
 
             if ($responseSend['status'] !== 200) {
                 return response()->json([
-                    'status' => 'error',
+                    'success' => false,
                     'message' => $responseSend['message'],
                     'errors' => $responseSend['errors']
                 ], 500);
@@ -91,6 +70,7 @@ class MailerController extends Controller
 
             // Si la subfunción fue exitosa, devuelve la respuesta de éxito
             return response()->json([
+                'success' => true,
                 'message' => $responseSend['message']
             ], 200);
 
